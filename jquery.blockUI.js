@@ -154,6 +154,8 @@ $.blockUI.defaults = {
 
 	// fadeOut time in millis; set to 0 to disable fadeOut on unblock
 	fadeOut:  400,
+	
+	slideDown: false,
 
 	// time in millis to wait before auto-unblocking; set to 0 to disable auto-unblock
 	timeout: 0,
@@ -332,7 +334,22 @@ function install(el, opts) {
 
 	if (($.browser.msie || opts.forceIframe) && opts.showOverlay)
 		lyr1.show(); // opacity is zero
-	if (opts.fadeIn) {
+    if (opts.slideDown)
+    {
+        lyr3.css('top', -lyr3.outerHeight());
+        
+        var cb = opts.onBlock ? opts.onBlock : noOp;
+        var cb1 = (opts.showOverlay && !msg) ? cb : noOp;
+        var cb2 = msg ? cb : noOp;
+        if (opts.showOverlay)
+            lyr2._fadeIn(opts.fadeIn, cb1);
+        if (msg)
+        {
+            lyr3.show();
+            lyr3.animate({ top: 0 }, opts.fadeIn, cb2);
+        }
+    }
+    else if (opts.fadeIn) {
 		var cb = opts.onBlock ? opts.onBlock : noOp;
 		var cb1 = (opts.showOverlay && !msg) ? cb : noOp;
 		var cb2 = msg ? cb : noOp;
@@ -393,7 +410,15 @@ function remove(el, opts) {
 	if (full)
 		pageBlock = pageBlockEls = null;
 
-	if (opts.fadeOut) {
+	if (opts.slideDown)
+    {
+	    var lyr3 = els.filter('.blockPage, .blockElement');
+	    lyr3.animate({ top: -lyr3.outerHeight() }, opts.fadeOut);
+	    var els = els.not(lyr3);
+	    els.fadeOut(opts.fadeOut);
+        setTimeout(function() { reset(els.add(lyr3),data,opts,el); }, opts.fadeOut);
+    }
+	else if (opts.fadeOut) {
 		els.fadeOut(opts.fadeOut);
 		setTimeout(function() { reset(els,data,opts,el); }, opts.fadeOut);
 	}
